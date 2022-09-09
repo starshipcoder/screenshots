@@ -30,6 +30,12 @@ void moveFiles(String srcDir, String dstDir) {
   });
 }
 
+extension IsBool on String {
+  bool parseBool() {
+    return toLowerCase() == 'true';
+  }
+}
+
 /// Creates a list of available iOS simulators.
 /// (really just concerned with simulators for now).
 /// Provides access to their IDs and status'.
@@ -81,7 +87,8 @@ Map transformIosSimulators(Map simsInfo) {
 // finds the iOS simulator with the highest available iOS version
 Map getHighestIosSimulator(Map iosSims, String deviceName) {
   final Map? iOSVersions = iosSims[deviceName];
-  if (iOSVersions == null) throw 'Could not find iOS version'; // todo: hack for real device
+  if (iOSVersions == null)
+    throw 'Could not find iOS version'; // todo: hack for real device
 
   // get highest iOS version
   var iOSVersionName = getHighestIosVersion(iOSVersions);
@@ -290,7 +297,8 @@ String getIosSimulatorLocale(String udId) {
 //}
 
 /// Wait for android device/emulator locale to change.
-Future<String?> waitAndroidLocaleChange(String deviceId, String toLocale) async {
+Future<String?> waitAndroidLocaleChange(
+    String deviceId, String toLocale) async {
   final regExp = RegExp(
       'ContactsProvider: Locale has changed from .* to \\[${toLocale.replaceFirst('-', '_')}\\]|ContactsDatabaseHelper: Switching to locale \\[${toLocale.replaceFirst('-', '_')}\\]');
 //  final regExp = RegExp(
@@ -305,7 +313,8 @@ Future<String?> waitAndroidLocaleChange(String deviceId, String toLocale) async 
 /// Filters a list of devices to get real ios devices. (only used in test??)
 List<DaemonDevice> getIosDaemonDevices(List<DaemonDevice> devices) {
   final iosDevices = devices
-      .where((device) => device.deviceType == DeviceType.ios && !device.emulator)
+      .where(
+          (device) => device.deviceType == DeviceType.ios && !device.emulator)
       .toList();
   return iosDevices;
 }
@@ -313,7 +322,8 @@ List<DaemonDevice> getIosDaemonDevices(List<DaemonDevice> devices) {
 /// Filters a list of devices to get real android devices.
 List<DaemonDevice> getAndroidDevices(List<DaemonDevice> devices) {
   final iosDevices = devices
-      .where((device) => device.deviceType != DeviceType.ios && !device.emulator)
+      .where(
+          (device) => device.deviceType != DeviceType.ios && !device.emulator)
       .toList();
   return iosDevices;
 }
@@ -371,10 +381,9 @@ DaemonEmulator? findEmulator(
   // find highest by avd version number
   emulators.sort(emulatorComparison);
   // todo: fix find for example 'Nexus_6_API_28' and Nexus_6P_API_28'
-  return emulators.lastWhereOrNull(
-      (emulator) => emulator.id
-          .toUpperCase()
-          .contains(emulatorName.toUpperCase().replaceAll(' ', '_')));
+  return emulators.lastWhereOrNull((emulator) => emulator.id
+      .toUpperCase()
+      .contains(emulatorName.toUpperCase().replaceAll(' ', '_')));
 }
 
 int emulatorComparison(DaemonEmulator a, DaemonEmulator b) =>
@@ -403,8 +412,12 @@ String toPlatformPath(String posixPath, {p.Context? context}) {
 /// Path to the `adb` executable.
 Future<bool> isAdbPath() async {
   return await runInContext<bool>(() async {
-    final adbPath = getAdbPath(androidSdk);
-    return adbPath.isNotEmpty;
+    try {
+      final adbPath = getAdbPath(androidSdk);
+      return adbPath.isNotEmpty;
+    } catch (e) {
+      return false;
+    }
   });
 }
 
@@ -417,8 +430,7 @@ Future<bool> isEmulatorPath() async {
 }
 
 /// Run command and return stdout as [string].
-String cmd(List<String> cmd,
-    {String? workingDirectory, bool silent = true}) {
+String cmd(List<String> cmd, {String? workingDirectory, bool silent = true}) {
   final result = processManager.runSync(cmd,
       workingDirectory: workingDirectory, runInShell: true);
   _traceCommand(cmd, workingDirectory: workingDirectory);

@@ -33,10 +33,11 @@ class ScreenshotsEnv {
 
   static ScreenshotsEnv fromJson(Screens screens, Map<String, dynamic> map) =>
       ScreenshotsEnv(
-          screen: screens.getScreen(map['screen'])!,
-          device: map['device'],
-          locale: map['locale'],
-          orientation: utils.getEnumFromString(Orientation.values, map['orientation']),
+        screen: screens.getScreen(map['screen'])!,
+        device: map['device'],
+        locale: map['locale'],
+        orientation:
+            utils.getEnumFromString(Orientation.values, map['orientation']),
       );
 
   Map<String, String?> toJson() => {
@@ -87,13 +88,15 @@ class Config {
         archiveDir: archive);
   }
 
-  Config._({required this.devices,
+  Config._({
+    required this.devices,
     required this.isFrameEnabled,
     required this.tests,
     required this.stagingDir,
     required this.locales,
     required this.archiveDir,
-    required this.recordingDir,});
+    required this.recordingDir,
+  });
 
   ScreenshotsEnv? _screenshotsEnv;
   final List<ConfigDevice> devices;
@@ -108,10 +111,9 @@ class Config {
   List<ConfigDevice> get iosDevices =>
       devices.where((device) => device.deviceType == DeviceType.ios).toList();
 
-  List<ConfigDevice> get androidDevices =>
-      devices
-          .where((device) => device.deviceType == DeviceType.android)
-          .toList();
+  List<ConfigDevice> get androidDevices => devices
+      .where((device) => device.deviceType == DeviceType.android)
+      .toList();
 
   bool isFrameEnabled;
 
@@ -120,16 +122,12 @@ class Config {
   String? archiveDir;
 
   ConfigDevice? getDevice(String deviceName) =>
-      devices
-          .where((device) => device.name == deviceName)
-          .firstOrNull;
+      devices.where((device) => device.name == deviceName).firstOrNull;
 
   /// Check for active run type.
   /// Run types can only be one of [DeviceType].
   bool isRunTypeActive(DeviceType deviceType) =>
-      devices
-          .where((element) => element.deviceType == deviceType)
-          .isNotEmpty;
+      devices.where((element) => element.deviceType == deviceType).isNotEmpty;
 
   /// Check if frame is required for [deviceName].
   bool isFrameRequired(String deviceName, Orientation? orientation) {
@@ -178,8 +176,8 @@ class Config {
     io.exit(1);
   }
 
-  static List<ConfigDevice> _processDevices(Map<String, dynamic> devices,
-      bool globalFraming) {
+  static List<ConfigDevice> _processDevices(
+      Map<String, dynamic> devices, bool globalFraming) {
     Orientation _getValidOrientation(String orientation, String deviceName) {
       for (var v in Orientation.values) {
         if (utils.getStringFromEnum(v) == orientation) {
@@ -200,27 +198,29 @@ class Config {
 
     devices.forEach((deviceType, device) {
       device?.forEach((deviceName, deviceProps) {
-        if (deviceProps == null || deviceProps is! Map<String, dynamic>) {
+        if (deviceProps != null && !deviceProps is Map<String, dynamic>) {
           throw ConfigException("Invalid value for device '$deviceName'");
         }
 
-        final orientationVal = deviceProps['orientation'];
-        final frame = _getString(deviceProps, 'frame') ?? globalFraming;
+        final dynamic orientationVal = deviceProps?['orientation'];
+        final frame =
+            deviceProps?["frame"]?.toString().parseBool() ?? globalFraming;
+        final isBuild = deviceProps?["build"] ?? true;
 
         configDevices.add(ConfigDevice(
           deviceName,
           utils.getEnumFromString(DeviceType.values, deviceType),
-          frame == 'true',
+          frame,
           orientationVal == null
-              ? []
+              ? List<Orientation>.empty()
               : orientationVal is String
-              ? [_getValidOrientation(orientationVal, deviceName)]
-              : orientationVal is List
-              ? orientationVal
-              .map((o) => _getValidOrientation(o, deviceName))
-              .toList()
-              : [],
-          _getString(deviceProps, 'build') == "true",
+                  ? [_getValidOrientation(orientationVal, deviceName)]
+                  : orientationVal is List
+                      ? orientationVal
+                          .map((o) => _getValidOrientation(o, deviceName))
+                          .toList()
+                      : [],
+          isBuild,
         ));
       });
     });
@@ -239,11 +239,13 @@ class ConfigDevice {
   final List<Orientation> orientations;
   final bool isBuild;
 
-  ConfigDevice(this.name,
-      this.deviceType,
-      this.isFramed,
-      this.orientations,
-      this.isBuild,);
+  ConfigDevice(
+    this.name,
+    this.deviceType,
+    this.isFramed,
+    this.orientations,
+    this.isBuild,
+  );
 
   @override
   bool operator ==(other) {
@@ -257,8 +259,7 @@ class ConfigDevice {
 
   @override
   String toString() =>
-      'name: $name, deviceType: ${utils.getStringFromEnum(
-          deviceType)}, isFramed: $isFramed, orientations: $orientations, isBuild: $isBuild';
+      'name: $name, deviceType: ${utils.getStringFromEnum(deviceType)}, isFramed: $isFramed, orientations: $orientations, isBuild: $isBuild';
 
   bool isFrameRequired(Orientation? orientation) {
     if (orientation == null) {
@@ -266,7 +267,7 @@ class ConfigDevice {
     }
 
     return (orientation == Orientation.LandscapeLeft ||
-        orientation == Orientation.LandscapeRight)
+            orientation == Orientation.LandscapeRight)
         ? false
         : isFramed;
   }
