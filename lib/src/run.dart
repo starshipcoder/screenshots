@@ -66,7 +66,7 @@ class Screenshots {
   final Screens screens = Screens();
   final Config config;
   List<DaemonDevice> devices = [];
-  List<DaemonEmulator> emulators=[];
+  List<DaemonEmulator> emulators = [];
   Archive? archive;
 
   /// Capture screenshots, process, and load into fastlane according to config file.
@@ -200,12 +200,13 @@ class Screenshots {
         emulator = utils.findEmulator(emulators, d.name);
         if (emulator != null) {
           printStatus('Starting ${d.name}...');
-          deviceId = await startEmulator(daemonClient, emulator.id, config.stagingDir);
+          deviceId =
+              await startEmulator(daemonClient, emulator.id, config.stagingDir);
         } else {
           // if no matching android emulator, look for matching ios simulator
           // and start it
-          simulator = utils.getHighestIosSimulator(
-              utils.getIosSimulators(), d.name);
+          simulator =
+              utils.getHighestIosSimulator(utils.getIosSimulators(), d.name);
           deviceId = simulator['udid'];
           // check if current simulator is pending a locale change
           if (Intl.canonicalizedLocale(config.locales[0]) ==
@@ -249,7 +250,7 @@ class Screenshots {
 
         // save original android locale for reverting later if necessary
         String? origAndroidLocale;
-        if (isRunningAndroidDeviceOrEmulator(device, emulator!)) {
+        if (isRunningAndroidDeviceOrEmulator(device, emulator)) {
           origAndroidLocale = utils.getAndroidDeviceLocale(deviceId);
         }
 
@@ -271,25 +272,26 @@ class Screenshots {
             await setEmulatorLocale(deviceId, locale, d.name);
           }
           // set locale if ios simulator
-          if ((device != null && device.deviceType == DeviceType.ios && device.emulator) ||
+          if ((device != null &&
+                  device.deviceType == DeviceType.ios &&
+                  device.emulator) ||
               (device == null &&
                   simulator != null &&
                   !pendingIosLocaleChangeAtStart)) {
             // an already running simulator or a started simulator
-            final localeChanged = await setSimulatorLocale(deviceId,
-                d.name, locale, config.stagingDir, daemonClient);
+            final localeChanged = await setSimulatorLocale(
+                deviceId, d.name, locale, config.stagingDir, daemonClient);
             if (localeChanged) {
               // restart simulator
-              printStatus(
-                  'Restarting \'${d.name}\' due to locale change...');
+              printStatus('Restarting \'${d.name}\' due to locale change...');
               await shutdownSimulator(deviceId);
               await startSimulator(daemonClient, deviceId);
             }
           }
           if (pendingIosLocaleChangeAtStart) {
             // a non-running simulator
-            await setSimulatorLocale(deviceId, d.name, locale,
-                config.stagingDir, daemonClient);
+            await setSimulatorLocale(
+                deviceId, d.name, locale, config.stagingDir, daemonClient);
             printStatus('Starting ${d.name}...');
             await startSimulator(daemonClient, deviceId);
             pendingIosLocaleChangeAtStart = false;
@@ -352,15 +354,14 @@ class Screenshots {
         }
         // if an emulator was started, revert locale if necessary and shut it down
         if (origAndroidLocale != null) {
-          await setEmulatorLocale(
-              deviceId, origAndroidLocale, d.name);
+          await setEmulatorLocale(deviceId, origAndroidLocale, d.name);
           await shutdownAndroidEmulator(daemonClient, deviceId);
         }
         // if a simulator was started, revert locale if necessary and shut it down
         if (simulator != null && origIosLocale != null) {
           // todo restore backup of GlobalPreferences.plist
-          await setSimulatorLocale(deviceId, d.name, origIosLocale,
-              config.stagingDir, daemonClient);
+          await setSimulatorLocale(
+              deviceId, d.name, origIosLocale, config.stagingDir, daemonClient);
           await shutdownSimulator(deviceId);
         }
       }
@@ -392,7 +393,7 @@ class Screenshots {
       }
       // final cp = configPath;
       await utils.streamCmd(command,
-          environment: /*cp != null ? {kEnvConfigPath: cp} : */{});
+          environment: /*cp != null ? {kEnvConfigPath: cp} : */ {});
       // process screenshots
       final imageProcessor = ImageProcessor(config);
       await imageProcessor.process(
@@ -402,6 +403,7 @@ class Screenshots {
 }
 
 Future<void> shutdownSimulator(String deviceId) async {
+  // TODO: ignore if already terminated
   utils.cmd(['xcrun', 'simctl', 'shutdown', deviceId]);
   // shutdown apparently needs time when restarting
   // see https://github.com/flutter/flutter/issues/10228 for race condition on simulator
@@ -409,7 +411,15 @@ Future<void> shutdownSimulator(String deviceId) async {
 }
 
 Future<void> startSimulator(DaemonClient daemonClient, String deviceId) async {
-  utils.cmd(['xcrun', 'simctl', 'boot', deviceId]);
+  // ignore if booted
+  try {
+    utils.cmd(['xcrun', 'simctl', 'boot', deviceId]);
+  } catch (e) {
+    if (!e.toString().contains("149")) {
+      // 149 identifies that already booted
+      rethrow;
+    }
+  }
   await Future.delayed(Duration(milliseconds: 2000));
   await waitForEmulatorToStart(daemonClient, deviceId);
 }
@@ -422,8 +432,8 @@ Future<String> startEmulator(
 //    await _startAndroidEmulatorOnCI(emulatorId, stagingDir);
 //    return utils.findAndroidDeviceId(emulatorId);
 //  } else {
-    // testing locally, so start emulator in normal way
-    return await daemonClient.launchEmulator(emulatorId);
+  // testing locally, so start emulator in normal way
+  return await daemonClient.launchEmulator(emulatorId);
 //  }
 }
 
@@ -431,7 +441,8 @@ Future<String> startEmulator(
 /// Note: flutter daemon handles devices and running emulators/simulators as devices.
 DaemonDevice? findRunningDevice(List<DaemonDevice> devices,
     List<DaemonEmulator> emulators, String deviceName) {
-  return devices.where((DaemonDevice device) {
+  return devices
+      .where((DaemonDevice device) {
 //    // hack for CI testing. Platform is reporting as 'android-arm' instead of 'android-x86'
 //    if (device.platform == 'android-arm') {
 //      /// Find the device name of a running emulator.
@@ -449,25 +460,27 @@ DaemonDevice? findRunningDevice(List<DaemonDevice> devices,
 //      return emulatorName.contains(deviceName);
 //    }
 
-    if (device.emulator) {
-      if (device.deviceType == DeviceType.android) {
-        // running emulator
-        return device.emulatorId.replaceAll('_', ' ').toUpperCase().contains(
-            deviceName.toUpperCase());
-      } else {
-        // running simulator
-        return device.name.contains(deviceName);
-      }
-    } else {
-      if (device.deviceType == DeviceType.ios) {
-        // real ios device
-        return device.iosModel?.contains(deviceName) ?? false;
-      } else {
-        // real android device
-        return device.name.contains(deviceName);
-      }
-    }
-  })
+        if (device.emulator) {
+          if (device.deviceType == DeviceType.android) {
+            // running emulator
+            return device.emulatorId
+                .replaceAll('_', ' ')
+                .toUpperCase()
+                .contains(deviceName.toUpperCase());
+          } else {
+            // running simulator
+            return device.name.contains(deviceName);
+          }
+        } else {
+          if (device.deviceType == DeviceType.ios) {
+            // real ios device
+            return device.iosModel?.contains(deviceName) ?? false;
+          } else {
+            // real android device
+            return device.name.contains(deviceName);
+          }
+        }
+      })
       .toList()
       .firstOrNull;
 }
@@ -492,7 +505,8 @@ Future<bool> setSimulatorLocale(String deviceId, String deviceName,
 }
 
 /// Set the locale of a running emulator.
-Future<void> setEmulatorLocale(String deviceId, String testLocale, String deviceName) async {
+Future<void> setEmulatorLocale(
+    String deviceId, String testLocale, String deviceName) async {
   final deviceLocale = utils.getAndroidDeviceLocale(deviceId);
   printTrace("$deviceName locale: $deviceLocale, test locale: $testLocale");
   if (deviceLocale != null &&
@@ -511,8 +525,8 @@ Future<void> setEmulatorLocale(String deviceId, String testLocale, String device
 }
 
 /// Change local of real android device or running emulator.
-bool changeAndroidLocale(String deviceId, String deviceLocale,
-    String testLocale) {
+bool changeAndroidLocale(
+    String deviceId, String deviceLocale, String testLocale) {
   if (utils.cmd([getAdbPath(androidSdk), '-s', deviceId, 'root']) ==
       'adbd cannot run as root in production builds\n') {
     printError(
@@ -545,8 +559,8 @@ bool changeAndroidLocale(String deviceId, String deviceLocale,
 }
 
 /// Change locale of non-running simulator.
-Future<void> _changeSimulatorLocale(String stagingDir, String name,
-    String testLocale) async =>
+Future<void> _changeSimulatorLocale(
+        String stagingDir, String name, String testLocale) async =>
     await utils.streamCmd([
       '$stagingDir/resources/script/simulator-controller',
       name,
@@ -589,4 +603,3 @@ Future<String> shutdownAndroidEmulator(
 DeviceType? getDeviceType(Config config, String deviceName) {
   return config.getDevice(deviceName)?.deviceType;
 }
-
