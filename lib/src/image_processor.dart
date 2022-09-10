@@ -84,7 +84,8 @@ class ImageProcessor {
     if (screenshotPaths.isNotEmpty) {
       final androidModelType =
           fastlane.getAndroidModelType(screenProps, device.name);
-      var dstDir = fastlane.getDirPath(device.deviceType, locale, androidModelType);
+      var dstDir =
+          fastlane.getDirPath(device.deviceType, locale, androidModelType);
       runMode == RunMode.recording
           ? dstDir = '${_config.recordingDir!}/$dstDir'
           : null;
@@ -178,7 +179,7 @@ class ImageProcessor {
 
     final options = {
       'screenshotPath': screenshotPath,
-      'statusbarPath': statusbarPath,
+      'statusbarPath': statusbarPath.path,
     };
     await im.convert('overlay', options);
   }
