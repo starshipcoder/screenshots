@@ -184,6 +184,8 @@ String getIosSimulatorLocale(String udId) {
   final env = platform.environment;
   final globalPreferencesPath =
       '${env['HOME']}/Library/Developer/CoreSimulator/Devices/$udId/data/Library/Preferences/.GlobalPreferences.plist';
+  final globalDefaultsPath =
+      '${env['HOME']}/Library/Developer/CoreSimulator/Devices/$udId/data/Library/Preferences/.GlobalDefaults.plist';
 
   // create file if missing (iOS 13)
   final globalPreferences = fs.file(globalPreferencesPath);
@@ -252,7 +254,13 @@ String getIosSimulatorLocale(String udId) {
   }
   final localeInfo = jsonDecode(
       cmd(['plutil', '-convert', 'json', '-o', '-', globalPreferencesPath]));
-  final locale = localeInfo['AppleLocale'];
+  var locale = localeInfo['AppleLocale'];
+  if (locale == null) {
+    // if AppleLocale null (not yet customized), try .GlobalDefaults
+    final defaultsLocaleInfo = jsonDecode(
+        cmd(['plutil', '-convert', 'json', '-o', '-', globalDefaultsPath]));
+    locale = defaultsLocaleInfo['AppleLocale'];
+  }
   return locale;
 }
 

@@ -59,7 +59,7 @@ const kFastlaneTenInch = 'tenInch';
 // android/fastlane/metadata/android/en-US/images/sevenInchScreenshots
 /// Generate fastlane dir path for ios or android.
 String getDirPath(
-    DeviceType deviceType, String locale, String androidModelType) {
+    DeviceType deviceType, String locale, String? androidModelType) {
   locale = locale.replaceAll('_', '-'); // in case canonicalized
   const androidPrefix = 'android/fastlane/metadata/android';
   const iosPrefix = 'ios/fastlane/screenshots';
@@ -75,13 +75,13 @@ String getDirPath(
 }
 
 /// Get android model type (phone or tablet screen size).
-String getAndroidModelType(ScreenInfo? screen, String deviceName) {
-  var androidDeviceType = kFastlanePhone;
+String? getAndroidModelType(ScreenInfo? screen, String deviceName) {
+  String? androidDeviceType = kFastlanePhone;
   if (screen == null) {
     printStatus(
         'Warning: using default value \'$kFastlanePhone\' in \'$deviceName\' fastlane directory.');
   } else {
-    androidDeviceType = screen.destName!;
+    androidDeviceType = screen.destName;
   }
   return androidDeviceType;
 }

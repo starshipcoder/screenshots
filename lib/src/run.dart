@@ -562,7 +562,7 @@ bool changeAndroidLocale(
 Future<void> _changeSimulatorLocale(
         String stagingDir, String name, String testLocale) async =>
     await utils.streamCmd([
-      '$stagingDir/resources/script/simulator-controller',
+      '$stagingDir/script/simulator-controller',
       name,
       'locale',
       testLocale

@@ -225,7 +225,14 @@ class DaemonClient {
 
 /// Get attached ios devices with id and model.
 List<Map<String, String>> getIosDevices() {
-  final regExp = RegExp(r'Found (\w+) \(\w+, (.*), \w+, \w+\)');
+  // check if ios-deploy installed
+  try {
+    cmd(['sh', '-c', 'ios-deploy -V']);
+  } catch (e) {
+    throw "Executable \'ios-deploy\' throws exception (brew install ios-deploy)";
+  }
+
+  final regExp = RegExp(r'Found (\w+) \(\w+, (.*), \w+, \w+');
   final noAttachedDevices = 'no attached devices';
   final iosDeployDevices =
       cmd(['sh', '-c', 'ios-deploy -c || echo "$noAttachedDevices"'])
