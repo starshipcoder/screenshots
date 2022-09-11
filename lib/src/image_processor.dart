@@ -71,8 +71,9 @@ class ImageProcessor {
             await append(_config.stagingDir, paths, screenshotPath.path);
           }
 
-          await frame(_config.stagingDir, screenProps, paths,
-              screenshotPath.path, device.deviceType, runMode);
+          // TODO: don't add frame, let frameit handle this. Atleast add config option to deactivate
+          // await frame(_config.stagingDir, screenProps, paths,
+          //     screenshotPath.path, device.deviceType, runMode);
         }
         status.stop();
       } else {
@@ -212,7 +213,7 @@ class ImageProcessor {
             : kDefaultAndroidBackground;
 
     final options = {
-      'framePath': tmpDir + '/' + paths.frame!.path,
+      'framePath': paths.frame!.path,
       'size': info.size,
       'resize': info.resize,
       'offset': info.offset,
