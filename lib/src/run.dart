@@ -561,21 +561,28 @@ bool changeAndroidLocale(
       "Changing locale from $deviceLocale to $testLocale on '$deviceId'...");
 
   // adb shell "setprop persist.sys.locale fr_CA; setprop ctl.restart zygote"
-  utils.cmd([
-    getAdbPath(androidSdk),
-    '-s',
-    deviceId,
-    'shell',
-    'setprop',
-    'persist.sys.locale',
-    testLocale,
-    ';',
-    'setprop',
-    'ctl.restart',
-    'zygote',
-  ]);
-
-  return true;
+  // try this a couple of times as error: close randomly occurring
+  for (var i = 0; i < 5; i++) {
+    try {
+      utils.cmd([
+        getAdbPath(androidSdk),
+        '-s',
+        deviceId,
+        'shell',
+        'setprop',
+        'persist.sys.locale',
+        testLocale,
+        ';',
+        'setprop',
+        'ctl.restart',
+        'zygote',
+      ]);
+      return true;
+    } catch (e) {
+      printError(e.toString());
+    }
+  }
+  return false;
 }
 
 /// Change locale of non-running simulator.
