@@ -42,7 +42,10 @@ Future _clearFastlaneDir(Screens screens, String deviceName, String locale,
   // delete images ending with .kImageExtension
   // for compatibility with FrameIt
   // (see https://github.com/mmcc007/screenshots/issues/61)
-  deleteMatchingFiles(dirPath, RegExp('$deviceName.*.$kImageExtension'));
+  final regDeviceName = deviceName
+      .replaceAll('(', '\\(')
+      .replaceAll(')', '\\)'); // escape "(" and ")"
+  deleteMatchingFiles(dirPath, RegExp('$regDeviceName.*.$kImageExtension'));
   if (runMode == RunMode.normal) {
     // delete all diff files (if any)
     deleteMatchingFiles(
