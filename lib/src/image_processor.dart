@@ -188,10 +188,9 @@ class ImageProcessor {
   /// Append android navigation bar to screenshot.
   static Future<void> append(
       String tmpDir, ScreenImagePaths paths, String screenshotPath) async {
-    final screenshotNavbarPath = '$tmpDir/${paths.navbar}';
     final options = {
       'screenshotPath': screenshotPath,
-      'screenshotNavbarPath': screenshotNavbarPath,
+      'screenshotNavbarPath': paths.navbar?.path,
     };
     await im.convert('append', options);
   }

@@ -28,6 +28,7 @@ Future<bool> screenshots(
     bool? isBuild,
     bool isVerbose = false}) async {
   final screenshots = Screenshots(
+      configPath: configPath,
       config: Config(configPath: configPath, configStr: configStr),
       runMode: runMode,
       flavor: flavor,
@@ -52,12 +53,14 @@ Future<bool> screenshots(
 class Screenshots {
   Screenshots({
     required this.config,
+    this.configPath,
     this.runMode = RunMode.normal,
     this.flavor,
     this.isBuild,
     this.verbose = false,
   });
 
+  final String? configPath;
   final String? flavor;
   final bool? isBuild;
   final bool verbose;
@@ -395,9 +398,13 @@ class Screenshots {
         printStatus(
             'Warning: flavor parameter \'$flavor\' is ignored because no build is set for this device');
       }
-      // final cp = configPath;
-      await utils.streamCmd(command,
-          environment: /*cp != null ? {kEnvConfigPath: cp} : */ {});
+
+      final environment = <String, String>{};
+      if (configPath != null) {
+        environment[kEnvConfigPath] = configPath!;
+      }
+
+      await utils.streamCmd(command, environment: environment);
       // process screenshots
       final imageProcessor = ImageProcessor(config);
       await imageProcessor.process(
@@ -520,7 +527,16 @@ Future<void> setEmulatorLocale(
     //          daemonClient.verbose = true;
     if (changeAndroidLocale(deviceId, deviceLocale, testLocale)) {
       //          daemonClient.verbose = false;
-      await utils.waitAndroidLocaleChange(deviceId, testLocale);
+      try {
+        // locale change will load indefinitely if locale not installed on device
+        // to detect this: timeout of 1 minute
+        await Future(() => utils.waitAndroidLocaleChange(deviceId, testLocale))
+            .timeout(Duration(minutes: 1));
+      } on TimeoutException catch (e) {
+        printError(
+            "Failed to change locale on $deviceId. Make sure locale is present in Emulator settings");
+        rethrow;
+      }
       // allow additional time before orientation change
 //    await Future.delayed(Duration(milliseconds: 5000));
       await Future.delayed(Duration(milliseconds: 1000));
@@ -556,7 +572,7 @@ bool changeAndroidLocale(
     ';',
     'setprop',
     'ctl.restart',
-    'zygote'
+    'zygote',
   ]);
 
   return true;

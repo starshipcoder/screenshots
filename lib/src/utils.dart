@@ -26,7 +26,10 @@ void moveFiles(String srcDir, String dstDir) {
     fs.directory(dstDir).createSync(recursive: true);
   }
   fs.directory(srcDir).listSync().forEach((file) {
-    file.renameSync('$dstDir/${p.basename(file.path)}');
+    // do not rename as the source and destination path might be on different partitions
+    assert(file is File);
+    (file as File).copySync('$dstDir/${p.basename(file.path)}');
+    file.deleteSync();
   });
 }
 

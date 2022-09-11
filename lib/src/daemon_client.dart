@@ -56,9 +56,6 @@ class DaemonClient {
     final daemonEmulators = <DaemonEmulator>[];
     for (var emulator in emulators) {
       final daemonEmulator = loadDaemonEmulator(emulator);
-      if (daemonEmulator == null) {
-        continue;
-      }
       printTrace('daemonEmulator=$daemonEmulator');
       daemonEmulators.add(daemonEmulator);
     }
@@ -73,12 +70,23 @@ class DaemonClient {
         'emulatorId': emulatorId,
       },
     };
-    var result = await _sendCommand(command);
-    _processResponse(result, command);
+    await _sendCommand(command);
 
-    var e = await emulators;
+    // iteratively check until device found.
+    DaemonDevice? device;
+    await Future(
+      () async {
+        while (device == null) {
+          device = await devices.then((value) {
+            return value.firstWhereOrNull(
+                (element) => element.emulatorId == emulatorId);
+          });
+          await Future.delayed(Duration(milliseconds: 500));
+        }
+      },
+    ).timeout(Duration(minutes: 1));
 
-    return "unknown";
+    return device!.id;
   }
 
   /// List running real devices and booted emulators/simulators.
@@ -334,7 +342,7 @@ class DaemonDevice extends BaseDevice {
   }
 }
 
-DaemonEmulator? loadDaemonEmulator(Map<String, dynamic> emulator) {
+DaemonEmulator loadDaemonEmulator(Map<String, dynamic> emulator) {
   var platformType = emulator['platformType'];
 
   // TODO(trygvis): check what ios would return there
