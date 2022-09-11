@@ -353,15 +353,19 @@ class Screenshots {
           }
         }
         // if an emulator was started, revert locale if necessary and shut it down
-        if (origAndroidLocale != null) {
-          await setEmulatorLocale(deviceId, origAndroidLocale, d.name);
+        if (isRunningAndroidDeviceOrEmulator(device, emulator)) {
+          if (origAndroidLocale != null) {
+            await setEmulatorLocale(deviceId, origAndroidLocale, d.name);
+          }
           await shutdownAndroidEmulator(daemonClient, deviceId);
         }
         // if a simulator was started, revert locale if necessary and shut it down
-        if (simulator != null && origIosLocale != null) {
-          // todo restore backup of GlobalPreferences.plist
-          await setSimulatorLocale(
-              deviceId, d.name, origIosLocale, config.stagingDir, daemonClient);
+        if (simulator != null) {
+          if (origIosLocale != null) {
+            // todo restore backup of GlobalPreferences.plist
+            await setSimulatorLocale(deviceId, d.name, origIosLocale,
+                config.stagingDir, daemonClient);
+          }
           await shutdownSimulator(deviceId);
         }
       }
