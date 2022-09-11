@@ -600,11 +600,23 @@ Future<String> shutdownAndroidEmulator(
     DaemonClient daemonClient, String deviceId) async {
   utils.cmd([getAdbPath(androidSdk), '-s', deviceId, 'emu', 'kill']);
 //  await waitAndroidEmulatorShutdown(deviceId);
-  final device = await daemonClient.waitForEvent(EventType.deviceRemoved);
-  if (device['id'] != deviceId) {
-    throw 'Error: device id \'$deviceId\' not shutdown';
+  try {
+    await Future(
+      () async {
+        var found = true;
+        while (!found) {
+          found = await daemonClient.devices.then((value) => value
+                  .firstWhereOrNull((element) => element.id == deviceId)) !=
+              null;
+          await Future.delayed(Duration(milliseconds: 500));
+        }
+      },
+    ).timeout(Duration(minutes: 1));
+  } on TimeoutException catch (e) {
+    printError(
+        "Failed to shutdown device \'$deviceId\'. Nevertheless, continuing execution");
   }
-  return device['id'];
+  return deviceId;
 }
 
 ///// Start android emulator in a CI environment.
