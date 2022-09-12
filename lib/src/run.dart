@@ -525,7 +525,7 @@ Future<void> setEmulatorLocale(
       Intl.canonicalizedLocale(deviceLocale) !=
           Intl.canonicalizedLocale(testLocale)) {
     //          daemonClient.verbose = true;
-    if (changeAndroidLocale(deviceId, deviceLocale, testLocale)) {
+    if (await changeAndroidLocale(deviceId, deviceLocale, testLocale)) {
       //          daemonClient.verbose = false;
       try {
         // locale change will load indefinitely if locale not installed on device
@@ -545,8 +545,8 @@ Future<void> setEmulatorLocale(
 }
 
 /// Change local of real android device or running emulator.
-bool changeAndroidLocale(
-    String deviceId, String deviceLocale, String testLocale) {
+Future<bool> changeAndroidLocale(
+    String deviceId, String deviceLocale, String testLocale) async {
   if (utils.cmd([getAdbPath(androidSdk), '-s', deviceId, 'root']) ==
       'adbd cannot run as root in production builds\n') {
     printError(
@@ -580,6 +580,7 @@ bool changeAndroidLocale(
       return true;
     } catch (e) {
       printError(e.toString());
+      await Future.delayed(Duration(milliseconds: 500));
     }
   }
   return false;
