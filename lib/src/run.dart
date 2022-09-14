@@ -581,7 +581,7 @@ Future<bool> changeAndroidLocale(
       return true;
     } catch (e) {
       printError(e.toString());
-      await Future.delayed(Duration(milliseconds: 500));
+      await Future.delayed(Duration(seconds: 1));
     }
   }
   return false;
