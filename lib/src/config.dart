@@ -10,8 +10,6 @@ import 'globals.dart';
 import 'resources.dart';
 import 'utils.dart' as utils;
 
-const kEnvConfigPath = 'SCREENSHOTS_YAML';
-
 class ConfigException implements Exception {
   const ConfigException(this.message);
 
@@ -72,6 +70,7 @@ class Config {
     var isFrameEnabled = _configInfo['frame'] as bool? ?? false;
 
     var devices = _processDevices(_configInfo['devices'], isFrameEnabled);
+    var driver = _configInfo['driver'];
     var tests = _processList(_configInfo['tests']);
     var recording = _configInfo['recording'];
     var locales = _processList(_configInfo['locales']);
@@ -81,6 +80,7 @@ class Config {
     return Config._(
         devices: devices,
         isFrameEnabled: isFrameEnabled,
+        driver: driver,
         tests: tests,
         recordingDir: recording,
         locales: locales,
@@ -91,6 +91,7 @@ class Config {
   Config._({
     required this.devices,
     required this.isFrameEnabled,
+    required this.driver,
     required this.tests,
     required this.stagingDir,
     required this.locales,
@@ -101,6 +102,8 @@ class Config {
   ScreenshotsEnv? _screenshotsEnv;
   final List<ConfigDevice> devices;
 
+  String driver;
+  
   // Getters
   List<String> tests;
 

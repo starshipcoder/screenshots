@@ -392,6 +392,7 @@ class Screenshots {
       if (flavor != null) {
         command.addAll(['--flavor', flavor!]);
       }
+      command.addAll(['--driver', config.driver]);
       command.addAll(testPath.split(" ")); // add test path or custom command
       printStatus('Running: ${command.join(" ")}');
       if (!_isBuild() && isFlavor()) {

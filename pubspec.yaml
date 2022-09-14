@@ -34,6 +34,8 @@ dev_dependencies:
   quiver: '>=2.0.0 <3.0.0'
   fake_process_manager: ^0.2.0
   collection: any
+  integration_test:
+    sdk: flutter
 
 dependency_overrides:
   fake_process_manager:
