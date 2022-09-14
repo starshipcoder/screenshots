@@ -70,7 +70,7 @@ class Config {
     var isFrameEnabled = _configInfo['frame'] as bool? ?? false;
 
     var devices = _processDevices(_configInfo['devices'], isFrameEnabled);
-    var driver = _configInfo['driver'];
+    var driver = _configInfo['driver']!;
     var tests = _processList(_configInfo['tests']);
     var recording = _configInfo['recording'];
     var locales = _processList(_configInfo['locales']);
@@ -103,7 +103,7 @@ class Config {
   final List<ConfigDevice> devices;
 
   String driver;
-  
+
   // Getters
   List<String> tests;
 
