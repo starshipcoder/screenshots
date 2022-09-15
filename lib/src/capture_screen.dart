@@ -4,6 +4,7 @@ import 'package:integration_test/src/channel.dart';
 
 import 'dart:async';
 import 'dart:io';
+import 'dart:ui';
 
 bool isAndroid() {
   return Platform.isAndroid;
