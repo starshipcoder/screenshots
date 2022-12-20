@@ -182,7 +182,7 @@ _Screenshots_ uses a configuration file to configure a run.
  The default config filename is `screenshots.yaml`:
 ````yaml
 # A list of screen capture tests
-driver: test_driver/main.dart
+driver: test_driver/integration_test.dart
 
 tests:
 # Note: flutter driver expects a pair of files eg, main1.dart and main1_test.dart
