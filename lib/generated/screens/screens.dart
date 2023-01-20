@@ -109,6 +109,7 @@ const List<ScreenInfo> screens = [
     [
       'iPad Pro (12.9-inch) (3rd generation)',
       'iPad Pro (12.9-inch) (4th generation)',
+      'iPad Pro (12.9-inch) (6th generation)',
     ],
     statusbar: i10.r,
     statusbarBlack: i10.r,
