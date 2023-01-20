@@ -201,7 +201,7 @@ class Config {
 
     devices.forEach((deviceType, device) {
       device?.forEach((deviceName, deviceProps) {
-        if (deviceProps != null && !deviceProps is Map<String, dynamic>) {
+        if (deviceProps != null && !(deviceProps is Map<String, dynamic>)) {
           throw ConfigException("Invalid value for device '$deviceName'");
         }
 
