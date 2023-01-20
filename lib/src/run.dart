@@ -321,7 +321,7 @@ class Screenshots {
                 case DeviceType.ios:
                   if (currentDevice.emulator) {
                     changeDeviceOrientation(d.deviceType, orientation,
-                        scriptDir: '${config.stagingDir}/resources/script');
+                        scriptDir: '${config.stagingDir}/script');
                   } else {
                     printStatus(
                         'Warning: cannot change orientation of a real iOS device.');
