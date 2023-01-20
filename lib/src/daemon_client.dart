@@ -251,9 +251,9 @@ List<Map<String, String>> getIosDevices() {
     return [];
   }
   return iosDeployDevices.map((line) {
-    final matches = regExp.firstMatch(line)!;
+    final matches = regExp.firstMatch(line);
     final device = <String, String>{};
-    device['id'] = matches.group(1)!;
+    device['id'] = matches!.group(1)!;
     device['model'] = matches.group(2)!;
     return device;
   }).toList();
