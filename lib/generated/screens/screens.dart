@@ -139,9 +139,7 @@ const List<ScreenInfo> screens = [
     "80%",
     "-3+8",
     "phone",
-    [
-      'Nexus 6P',
-    ],
+    ['Nexus 6P', 'Pixel 4'],
     statusbar: i16.r,
     statusbarBlack: i16.r,
     statusbarWhite: i16.r,
@@ -171,10 +169,7 @@ const List<ScreenInfo> screens = [
     null,
     null,
     "phone",
-    [
-      'default phone',
-      'Nexus 6',
-    ],
+    ['default phone', 'Nexus 6', 'Pixel 4'],
   ),
   ScreenInfo(
     DeviceType.android,
