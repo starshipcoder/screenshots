@@ -14,7 +14,7 @@ final ImageMagick _kImageMagick = ImageMagick();
 ImageMagick get im => context.get<ImageMagick>() ?? _kImageMagick;
 
 class ImageMagick {
-  static const _kThreshold = 0.76;
+  static const _kThreshold = 0.50;
   static const kDiffSuffix = '-diff';
 
 //const kThreshold = 0.5;
@@ -95,7 +95,7 @@ class ImageMagick {
   /// cropSizeOffset, eg, '1242x42+0+0'.
   bool isThresholdExceeded(String imagePath, String cropSizeOffset,
       [double threshold = _kThreshold]) {
-    //convert logo.png -crop $crop_size$offset +repage -colorspace gray -format "%[fx:(mean>$threshold)?1:0]" info:
+    //convert logo.png -crop $crop_size$offset +repage -colorspace gray -format "%[fx:(mean.r>$threshold)?1:0]" info:
     final result = cmd(_getPlatformCmd('convert', <String>[
       imagePath,
       '-crop',
@@ -104,7 +104,7 @@ class ImageMagick {
       '-colorspace',
       'gray',
       '-format',
-      '""%[fx:(mean>$threshold)?1:0]""',
+      '""%[fx:(mean.r>$threshold)?1:0]""',
       'info:'
     ])).replaceAll('"', ''); // remove quotes ""0""
     return result == '1';
